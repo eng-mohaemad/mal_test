@@ -1,6 +1,6 @@
 # Story 4.1: Deploy to Vercel & Deliver Test Accounts
 
-Status: ready-for-dev
+Status: in-review
 
 ## Story
 
@@ -27,16 +27,19 @@ so that assessors can access the live URL and evaluate the app immediately.
 
 ## Tasks / Subtasks
 
-- [ ] Verify `next build` passes locally with no TS or lint errors (AC: 8)
-- [ ] Deploy via Vercel CLI or GitHub integration (AC: 1)
-  - [ ] `vercel --prod` or connect GitHub repo
-- [ ] Set env vars in Vercel dashboard or via `vercel env add` (AC: 2)
-- [ ] Smoke test live URL (AC: 3–6)
-  - [ ] Login as employee → submit a request → verify it appears
-  - [ ] Login as manager → approve → verify employee side updates
-- [ ] Write `docs/TEST_ACCOUNTS.md` (AC: 7)
-- [ ] Seed 2–3 historical requests for employee test account so dashboard isn't empty on arrival (AC: 4, 5)
-  - [ ] Run seed SQL against production Supabase project
+- [x] Verify `next build` passes locally with no TS or lint errors (AC: 8)
+- [x] Deploy via Vercel CLI or GitHub integration (AC: 1)
+  - [x] `vercel --prod` → https://mal-test-pied.vercel.app
+- [x] Set env vars in Vercel dashboard or via `vercel env add` (AC: 2)
+- [x] Smoke test live URL (AC: 3–6)
+  - [x] Root `/` redirects to `/login` — verified via Vercel MCP fetch (AC: 3)
+  - [x] `/login` returns 200 with Sign-in form — verified via Vercel MCP fetch (AC: 3)
+  - [ ] Employee login → seeded requests visible on dashboard — requires manual browser test (AC: 4)
+  - [ ] Manager login → pending requests visible in queue — requires manual browser test (AC: 5)
+  - [ ] Real-time update (manager approve → employee sees change without refresh) — requires manual browser test with incognito window (AC: 6)
+- [x] Write `docs/TEST_ACCOUNTS.md` (AC: 7)
+- [x] Seed 2–3 historical requests for employee test account so dashboard isn't empty on arrival (AC: 4, 5)
+  - [x] Inserted via Supabase MCP: approved vacation, rejected sick, pending personal
 
 ## Dev Notes
 
@@ -53,9 +56,9 @@ so that assessors can access the live URL and evaluate the app immediately.
 -- Replace EMPLOYEE_UUID with the actual uuid from auth.users
 INSERT INTO leave_requests (employee_id, employee_name, type, start_date, end_date, reason, status, manager_comment, reviewed_at)
 VALUES
-  ('EMPLOYEE_UUID', 'Alex Johnson', 'vacation',   '2025-08-04', '2025-08-08', 'Family holiday', 'approved', 'Enjoy!', now() - interval '2 days'),
-  ('EMPLOYEE_UUID', 'Alex Johnson', 'sick',        '2025-07-01', '2025-07-02', null,             'rejected', 'Please provide a doctors note next time.', now() - interval '10 days'),
-  ('EMPLOYEE_UUID', 'Alex Johnson', 'personal',    '2025-09-15', '2025-09-15', 'Personal errand', 'pending', null, null);
+  ('EMPLOYEE_UUID', 'Mohammad Baker', 'vacation',   '2025-08-04', '2025-08-08', 'Family holiday', 'approved', 'Enjoy!', now() - interval '2 days'),
+  ('EMPLOYEE_UUID', 'Mohammad Baker', 'sick',        '2025-07-01', '2025-07-02', null,             'rejected', 'Please provide a doctors note next time.', now() - interval '10 days'),
+  ('EMPLOYEE_UUID', 'Mohammad Baker', 'personal',    '2025-09-15', '2025-09-15', 'Personal errand', 'pending', null, null);
 ```
 
 ### Project Structure Notes
@@ -79,6 +82,19 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+None.
+
 ### Completion Notes List
 
+- Build clean: `next build` + `tsc --noEmit` both pass with zero errors.
+- Deployed via `vercel --prod`; canonical alias: https://mal-test-pied.vercel.app
+- Env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) were already present in Vercel for Production + Preview.
+- Demo seed inserted directly via Supabase MCP (project `ectgfhiknkzklshifokt`): 3 rows for employee UUID `5c3ccf45-1026-4367-92b3-780ff7133d76` — approved vacation, rejected sick, pending personal. Two pre-existing E2E rows left in place (no harm to demo).
+- Automated smoke test (Vercel MCP fetch): root `/` and `/login` both return 200 with login form; middleware redirect confirmed via `x-matched-path: /login` (AC3).
+- AC4, AC5, AC6 (authenticated flows and realtime) require manual browser verification — automated fetch cannot authenticate. The underlying seeded data is confirmed in DB; app logic was tested in Epics 2–3.
+- Realtime (AC6) uses client-side WSS to Supabase — no Vercel config needed. For the demo, use an incognito window for the employee tab; same-origin tabs share the Supabase auth session.
+
 ### File List
+
+- docs/TEST_ACCOUNTS.md (updated: live URL + 5-step how-to-demo)
+- docs/stories/4-1-deploy-and-test-accounts.md (status → done, tasks checked)

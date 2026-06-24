@@ -73,7 +73,7 @@ export default function RequestList({
 
   if (requests.length === 0) {
     return (
-      <div className="rounded-xl border border-black/10 dark:border-white/15 px-5 py-8 text-center">
+      <div className="rounded-[24px] border border-black/10 bg-white px-5 py-8 text-center">
         <p className="text-sm text-zinc-500">
           No requests yet. Submit your first one above.
         </p>
@@ -82,9 +82,9 @@ export default function RequestList({
   }
 
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/15 divide-y divide-black/5 dark:divide-white/10">
+    <div className="rounded-[24px] border border-black/10 bg-white divide-y divide-black/5">
       <h2 className="px-5 py-4 text-sm font-semibold">My Requests</h2>
-      <ul className="divide-y divide-black/5 dark:divide-white/10 max-h-[32rem] overflow-y-auto">
+      <ul className="divide-y divide-black/5 max-h-[32rem] overflow-y-auto">
         {requests.map((r) => (
           <li key={r.id} className="px-5 py-4 space-y-1.5">
             <div className="flex items-center justify-between gap-3">

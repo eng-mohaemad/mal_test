@@ -77,7 +77,7 @@ export default function DecisionPanel({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-black/10 dark:border-white/15 bg-zinc-50 dark:bg-zinc-800/50 p-4 space-y-3">
+    <div className="mt-3 rounded-lg border border-black/10 bg-zinc-50 p-4 space-y-3">
       <p className="text-sm font-medium">
         {decision === "approved" ? "Approve" : "Reject"} this request?
       </p>
@@ -90,7 +90,7 @@ export default function DecisionPanel({
         placeholder="Add a note (optional)"
         rows={2}
         maxLength={500}
-        className="w-full rounded-md border border-black/10 dark:border-white/15 bg-white dark:bg-zinc-900 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-black/20 dark:focus:ring-white/20"
+        className="w-full rounded-md border border-black/10 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-black/20"
       />
       {errMsg && <p className="text-xs text-red-600">{errMsg}</p>}
       <div className="flex gap-2">
@@ -108,7 +108,7 @@ export default function DecisionPanel({
         <button
           onClick={cancel}
           disabled={isPending}
-          className="px-3 py-1.5 rounded-lg text-sm font-medium border border-black/10 dark:border-white/15 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+          className="px-3 py-1.5 rounded-lg text-sm font-medium border border-black/10 hover:bg-zinc-100 transition-colors"
         >
           Cancel
         </button>

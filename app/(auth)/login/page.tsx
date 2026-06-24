@@ -9,18 +9,29 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, initialState);
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 px-4 dark:bg-black">
+    <div className="flex min-h-screen items-center justify-center bg-[#c2d1e6] px-4">
       <form
         action={formAction}
-        className="w-full max-w-sm space-y-5 rounded-xl border border-black/10 bg-white p-8 shadow-sm dark:border-white/15 dark:bg-zinc-950"
+        className="w-full max-w-sm space-y-5 rounded-[24px] border border-black/10 bg-white p-8 shadow-sm"
       >
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-          <p className="text-sm text-zinc-500">Leave Request System</p>
+        <div className="flex items-center gap-2 mb-1">
+          <img
+            src="https://framerusercontent.com/images/hO9rVnJbUc0TOTWHuWKw73gUlTw.png"
+            alt="Mal logo"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
+          <span className="text-xl font-bold tracking-tight text-black">Mal</span>
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="email" className="text-sm font-medium">
+          <h1 className="text-2xl font-bold tracking-tight text-black">Sign in</h1>
+          <p className="text-sm text-[#666]">Leave Request System</p>
+        </div>
+
+        <div className="space-y-1">
+          <label htmlFor="email" className="text-sm font-medium text-black">
             Email
           </label>
           <input
@@ -29,12 +40,12 @@ export default function LoginPage() {
             type="email"
             autoComplete="email"
             required
-            className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20 dark:bg-zinc-900 dark:focus:border-white/50"
+            className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:border-black/40 transition-colors"
           />
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="password" className="text-sm font-medium">
+          <label htmlFor="password" className="text-sm font-medium text-black">
             Password
           </label>
           <input
@@ -43,12 +54,12 @@ export default function LoginPage() {
             type="password"
             autoComplete="current-password"
             required
-            className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20 dark:bg-zinc-900 dark:focus:border-white/50"
+            className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm outline-none focus:border-black/40 transition-colors"
           />
         </div>
 
         {state.error && (
-          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          <p role="alert" className="text-sm text-red-600">
             {state.error}
           </p>
         )}
@@ -56,7 +67,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+          className="w-full rounded-[199px] bg-black px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
         >
           {pending ? "Signing in…" : "Sign in"}
         </button>

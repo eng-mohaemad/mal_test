@@ -31,7 +31,7 @@ function Toast({ message, onDone }: { message: string; onDone: () => void }) {
     return () => clearTimeout(t);
   }, [onDone]);
   return (
-    <div className="fixed bottom-6 right-6 z-50 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2.5 text-sm shadow-lg">
+    <div className="fixed bottom-6 right-6 z-50 rounded-lg bg-zinc-900 text-white px-4 py-2.5 text-sm shadow-lg">
       {message}
     </div>
   );
@@ -113,18 +113,18 @@ export default function PendingQueue({
   return (
     <>
       {queue.length === 0 ? (
-        <div className="rounded-xl border border-black/10 dark:border-white/15 px-5 py-10 text-center text-sm text-zinc-500">
+        <div className="rounded-[24px] border border-black/10 bg-white px-5 py-10 text-center text-sm text-zinc-500">
           All caught up — no pending requests.
         </div>
       ) : (
-        <div className="rounded-xl border border-black/10 dark:border-white/15 divide-y divide-black/5 dark:divide-white/10">
+        <div className="rounded-[24px] border border-black/10 bg-white divide-y divide-black/5">
           <h2 className="px-5 py-4 text-sm font-semibold flex items-center gap-2">
             Pending Requests
-            <span className="inline-flex items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-xs font-semibold w-5 h-5">
+            <span className="inline-flex items-center justify-center rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold w-5 h-5">
               {queue.length}
             </span>
           </h2>
-          <ul className="divide-y divide-black/5 dark:divide-white/10">
+          <ul className="divide-y divide-black/5">
             {queue.map((r) => {
               const expanded   = expandedIds.has(r.id);
               const longReason = (r.reason?.length ?? 0) > 100;

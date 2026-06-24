@@ -14,13 +14,13 @@ export default function NewRequestForm() {
   const [state, formAction, pending] = useActionState(submitLeaveRequest, initialState);
 
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/15">
+    <div className="rounded-[24px] border border-black/10 bg-white">
       <div className="flex items-center justify-between px-5 py-4">
         <h2 className="text-sm font-semibold">New Leave Request</h2>
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="rounded-md border border-black/15 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10"
+          className="rounded-full border border-black/15 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-black/5"
         >
           {open ? "Cancel" : "+ New Request"}
         </button>
@@ -29,7 +29,7 @@ export default function NewRequestForm() {
       {open && (
         <form
           action={formAction}
-          className="border-t border-black/10 px-5 py-4 space-y-4 dark:border-white/15"
+          className="border-t border-black/10 px-5 py-4 space-y-4"
         >
           <input type="hidden" name="tz_offset" value={tzOffset} />
           <div className="space-y-1">
@@ -40,7 +40,7 @@ export default function NewRequestForm() {
               id="type"
               name="type"
               required
-              className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20 dark:bg-zinc-900 dark:focus:border-white/50"
+              className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 "
             >
               <option value="">Select type…</option>
               <option value="vacation">Vacation</option>
@@ -61,7 +61,7 @@ export default function NewRequestForm() {
                 required
                 min={today}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20 dark:bg-zinc-900 dark:focus:border-white/50"
+                className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 "
               />
             </div>
             <div className="space-y-1">
@@ -74,7 +74,7 @@ export default function NewRequestForm() {
                 type="date"
                 required
                 min={startDate || today}
-                className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20 dark:bg-zinc-900 dark:focus:border-white/50"
+                className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 "
               />
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function NewRequestForm() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            className="w-full rounded-[199px] bg-black px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
           >
             {pending ? "Submitting…" : "Submit Request"}
           </button>
@@ -115,7 +115,7 @@ function ReasonTextarea() {
         maxLength={500}
         rows={3}
         onChange={(e) => setLen(e.target.value.length)}
-        className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40 dark:border-white/20 dark:bg-zinc-900 dark:focus:border-white/50 resize-none"
+        className="w-full rounded-md border border-black/15 px-3 py-2 text-sm outline-none focus:border-black/40  resize-none"
       />
       <span className="absolute bottom-2 right-2 text-xs text-zinc-400">
         {len}/500

@@ -33,8 +33,8 @@ so that the app has a secure data layer with pre-existing test accounts ready fo
 5. RLS policy: managers can UPDATE `status`, `manager_comment`, `reviewed_at`, `reviewed_by` on any row.
 6. Employees cannot UPDATE or DELETE any row.
 7. Two test users are seeded in Supabase Auth with known credentials:
-   - `employee@test.com` / `Test1234!` — role: `employee`, name: `Alex Johnson`
-   - `manager@test.com`  / `Test1234!` — role: `manager`,  name: `Sam Rivera`
+   - `employee@test.com` / `Test1234!` — role: `employee`, name: `Mohammad Baker`
+   - `manager@test.com`  / `Test1234!` — role: `manager`,  name: `Abdallah Abu-Sheikh`
 8. A `profiles` table (or view) maps `user_id → name, role` for display purposes.
 9. SQL migration file is committed to `supabase/migrations/` so it can be re-applied.
 

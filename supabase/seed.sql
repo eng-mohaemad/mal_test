@@ -20,7 +20,7 @@ SELECT
   v.role
 FROM auth.users u
 JOIN (VALUES
-  ('employee@test.com', 'Alex Johnson', 'employee'),
-  ('manager@test.com',  'Sam Rivera',   'manager')
+  ('employee@test.com', 'Mohammad Baker',    'employee'),
+  ('manager@test.com',  'Abdallah Abu-Sheikh', 'manager')
 ) AS v(email, name, role) ON u.email = v.email
 WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = u.id);
