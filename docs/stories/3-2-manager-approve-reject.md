@@ -1,6 +1,6 @@
 # Story 3.2: Manager — Approve or Reject a Request
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -78,4 +78,16 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
+- `reviewLeaveRequest(id, decision, comment)` server action in `app/actions/leave.ts`: updates `status`, `manager_comment`, `reviewed_at`, `reviewed_by` using server-side Supabase client (RLS, not service role key). Guards against double-action with `.eq("status", "pending")`.
+- `DecisionPanel` is an inline client component (no modal library). Clicking Approve/Reject opens the panel per-card; Cancel collapses it.
+- Optimistic removal: `PendingQueue` removes card immediately on confirm, stashes it by index for restore-on-error.
+- Toast: 3-second fixed-position notification ("Request approved" / "Request rejected") via simple state + `setTimeout`.
+- Error path: if server action fails, card is restored at its original position, error text shown in panel.
+- `reviewed_by` set from `supabase.auth.getUser()` inside the server action (never from client).
+- Post-review patches: RLS policy (`003_tighten_manager_update_rls.sql`) enforces old row is `pending`, new status is `approved`/`rejected` only, `reviewed_by = auth.uid()`. Server action uses `.select("id")` to detect zero-row updates and returns an error when another manager already acted. Toast split from optimistic remove — `onConfirm` = remove only, `onSuccess` = toast after server confirms, error path restores card with no toast.
+
 ### File List
+
+- app/actions/leave.ts (reviewLeaveRequest added)
+- app/dashboard/manager/DecisionPanel.tsx
+- app/dashboard/manager/PendingQueue.tsx

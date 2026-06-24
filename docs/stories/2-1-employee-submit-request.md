@@ -1,6 +1,10 @@
+---
+baseline_commit: 8ce3712ca08161d04671e1e599565af6d7ce3d63
+---
+
 # Story 2.1: Employee — Submit Leave Request
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -25,21 +29,21 @@ so that my manager is notified and can review my time-off request.
 
 ## Tasks / Subtasks
 
-- [ ] Build employee dashboard layout (AC: 1, 8)
-  - [ ] Header with user name + sign-out
-  - [ ] Collapsible "New Request" panel or modal trigger
-- [ ] Build leave request form (AC: 2, 3)
-  - [ ] Controlled form with React state (or useForm pattern)
-  - [ ] Leave type select
-  - [ ] Start/end date inputs with validation
-  - [ ] Optional reason textarea with char count
-- [ ] Wire form submit to Supabase insert (AC: 4)
-  - [ ] Use Server Action or client-side supabase insert
-  - [ ] Pass `employee_id` from session, `employee_name` from profile
-- [ ] Handle success and error states (AC: 5, 6, 7)
-  - [ ] Success: toast notification + form reset + list refresh
-  - [ ] Error: inline error message, preserve form data
-- [ ] Show request history list (built further in Story 2.2, placeholder here)
+- [x] Build employee dashboard layout (AC: 1, 8)
+  - [x] Header with user name + sign-out
+  - [x] Collapsible "New Request" panel or modal trigger
+- [x] Build leave request form (AC: 2, 3)
+  - [x] Controlled form with React state (or useForm pattern)
+  - [x] Leave type select
+  - [x] Start/end date inputs with validation
+  - [x] Optional reason textarea with char count
+- [x] Wire form submit to Supabase insert (AC: 4)
+  - [x] Use Server Action or client-side supabase insert
+  - [x] Pass `employee_id` from session, `employee_name` from profile
+- [x] Handle success and error states (AC: 5, 6, 7)
+  - [x] Success: toast notification + form reset + list refresh
+  - [x] Error: inline error message, preserve form data
+- [x] Show request history list (built further in Story 2.2, placeholder here)
 
 ## Dev Notes
 
@@ -76,6 +80,25 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+None — clean run, no blockers.
+
 ### Completion Notes List
 
+- Server Action (`app/actions/leave.ts`) handles insert with server-side auth + validation; redirects to `?submitted=1` on success to prevent double-submit on back/refresh.
+- `SuccessBanner` client component auto-clears the query param after 4s via `router.replace`.
+- Client-side date validation uses native `min` attr + reactive `startDate` state to enforce end ≥ start without any library.
+- `employeeName` sourced from `profiles` table in the RSC shell (server-controlled, not user-typed).
+- `RequestList` is a stub — real implementation in Story 2.2.
+- Build verified clean: `npx next build` passes, `npx tsc --noEmit` passes, ESLint passes.
+
 ### File List
+
+- `app/dashboard/employee/page.tsx` — updated: RSC shell, fetches profile, passes name to form
+- `app/dashboard/employee/NewRequestForm.tsx` — new: collapsible form, `useActionState`, date validation
+- `app/dashboard/employee/RequestList.tsx` — new: stub placeholder
+- `app/dashboard/employee/SuccessBanner.tsx` — new: success feedback, auto-clears `?submitted=1`
+- `app/actions/leave.ts` — new: `submitLeaveRequest` Server Action
+
+## Change Log
+
+- 2026-06-24: Story 2.1 implemented — employee dashboard layout, leave request form, Server Action insert, success/error handling.

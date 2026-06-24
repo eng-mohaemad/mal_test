@@ -1,6 +1,6 @@
 # Story 3.1: Manager — Review Queue (Pending Requests)
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -77,4 +77,16 @@ claude-sonnet-4-6
 
 ### Completion Notes List
 
+- Manager page now RSC: fetches pending requests (FIFO) and profile, passes to PendingQueue client component.
+- Realtime subscription on `postgres_changes` INSERT with `filter: 'status=eq.pending'` appends to queue tail.
+- Empty state renders "All caught up — no pending requests." when queue length is 0.
+- Expandable reason text via `line-clamp-2` + toggle; relative time via `Intl.RelativeTimeFormat` in `lib/utils/time.ts`.
+- Action buttons wired in Story 3.2 via `DecisionPanel` (co-located in same route segment).
+- Post-review: code review passed; RLS tightened in migration 003, zero-row detection added to server action, toast timing fixed (fires only after server confirms success).
+
 ### File List
+
+- app/dashboard/manager/page.tsx
+- app/dashboard/manager/PendingQueue.tsx
+- app/dashboard/manager/DecisionPanel.tsx
+- lib/utils/time.ts

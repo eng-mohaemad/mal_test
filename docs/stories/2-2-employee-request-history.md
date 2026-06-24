@@ -1,6 +1,10 @@
+---
+baseline_commit: 8ce3712ca08161d04671e1e599565af6d7ce3d63
+---
+
 # Story 2.2: Employee — View Request History & Status
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -23,17 +27,17 @@ so that I know the outcome of each request without having to ask anyone.
 
 ## Tasks / Subtasks
 
-- [ ] Build `RequestList` client component (AC: 1, 2, 4, 5)
-  - [ ] Fetch initial requests from Supabase on mount (filtered by `employee_id = auth.uid()`)
-  - [ ] Render request cards with all fields
-  - [ ] Status badge component (pending/approved/rejected with colour)
-  - [ ] Empty state
-- [ ] Implement Supabase Realtime subscription (AC: 3)
-  - [ ] Subscribe to `leave_requests` changes for current user's rows
-  - [ ] On UPDATE event, update matching item in local state
-  - [ ] Unsubscribe on component unmount
-- [ ] Day count helper (AC: 2)
-  - [ ] `calcBusinessDays(start, end)` or simple calendar days — calendar days is fine for MVP
+- [x] Build `RequestList` client component (AC: 1, 2, 4, 5)
+  - [x] Fetch initial requests from Supabase on mount (filtered by `employee_id = auth.uid()`)
+  - [x] Render request cards with all fields
+  - [x] Status badge component (pending/approved/rejected with colour)
+  - [x] Empty state
+- [x] Implement Supabase Realtime subscription (AC: 3)
+  - [x] Subscribe to `leave_requests` changes for current user's rows
+  - [x] On UPDATE event, update matching item in local state
+  - [x] Unsubscribe on component unmount
+- [x] Day count helper (AC: 2)
+  - [x] `calcBusinessDays(start, end)` or simple calendar days — calendar days is fine for MVP
 
 ## Dev Notes
 
@@ -69,6 +73,36 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+- `npx tsc --noEmit` — clean
+- `npx eslint .` — clean
+- `npx next build` — success; `/dashboard/employee` renders as Dynamic (ƒ)
+
 ### Completion Notes List
 
+- Initial requests fetched server-side in the RSC and passed as `initialRequests` prop to `RequestList` — no loading flash, no extra client fetch on mount.
+- `key={(initialRequests ?? []).length}` on `<RequestList>` forces remount when RSC re-fetches after a submit redirect, resetting client state to the fresh prop.
+- Realtime subscribes to both `INSERT` and `UPDATE` events — INSERT covers new rows arriving via Realtime before the RSC refetch; UPDATE covers manager approve/reject in real-time.
+- `StatusBadge` in `components/` — shared, reused by manager dashboard (Story 3.x).
+- `formatDateRange` / `calcDays` in `lib/utils/dates.ts` — inclusive day count, dates parsed with `T00:00:00` to pin to local midnight.
+- `todayInOffset(tzOffset)` — server reconstructs user's local date from browser-supplied UTC offset (hidden field `tz_offset`). Client and server both derive `today` from same source.
+- `001_schema.sql` — explicit `GRANT SELECT ON profiles` and `GRANT SELECT, INSERT, UPDATE ON leave_requests TO authenticated`; Realtime publication guard wrapped in idempotent `DO $$ IF NOT EXISTS $$` block.
+- `002_lr_insert_employee_only.sql` — `WITH CHECK` now also enforces `end_date >= start_date` and `char_length(reason) <= 500` at the DB boundary.
+- Deferred: `tz_offset` bounds-check (demo project, low risk) — logged in `deferred-work.md`.
+
 ### File List
+
+- `app/dashboard/employee/RequestList.tsx` — replaced stub: RSC-seeded state, INSERT+UPDATE Realtime, scrollable card list, empty state
+- `app/dashboard/employee/page.tsx` — fetches initial requests server-side; passes `key` + `userId` + `initialRequests` to RequestList
+- `app/dashboard/employee/NewRequestForm.tsx` — `today` now derived per-render from `tzOffset`; hidden `tz_offset` field added
+- `app/actions/leave.ts` — past-date guard uses `todayInOffset(tzOffset)` from form data
+- `components/StatusBadge.tsx` — new: shared pending/approved/rejected badge
+- `lib/utils/dates.ts` — new: `localToday`, `todayInOffset`, `calcDays`, `formatDateRange`
+- `supabase/migrations/001_schema.sql` — explicit GRANTs; idempotent Realtime publication guard
+- `supabase/migrations/002_lr_insert_employee_only.sql` — `WITH CHECK` adds `end_date >= start_date`, reason length
+
+## Change Log
+
+| Date       | Change                                                                                   |
+|------------|------------------------------------------------------------------------------------------|
+| 2026-06-24 | Story 2.2 implemented — RequestList with Realtime, StatusBadge, date helper. Status → review. |
+| 2026-06-24 | Review patches: state sync via key, INSERT subscription, idempotent publication, explicit GRANTs, DB invariants, timezone fix. |

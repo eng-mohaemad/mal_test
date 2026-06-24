@@ -27,6 +27,14 @@ export async function login(
     return { error: "Invalid email or password." };
   }
 
-  // redirect() throws to perform the navigation, so it must be outside the try/return path.
-  redirect(dashboardPathForRole(data.user.user_metadata?.role));
+  // Read role from profiles table — single source of truth regardless of how
+  // the user was created (SQL seed or Dashboard). app_metadata is not reliable
+  // for Dashboard-created users where it may not be set.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+
+  redirect(dashboardPathForRole(profile?.role));
 }

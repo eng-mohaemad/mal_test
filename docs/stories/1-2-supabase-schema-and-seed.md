@@ -1,6 +1,10 @@
+---
+baseline_commit: 8ce3712ca08161d04671e1e599565af6d7ce3d63
+---
+
 # Story 1.2: Supabase Schema, RLS Policies & Seed Data
 
-Status: ready-for-dev
+Status: review
 
 ## Story
 
@@ -36,20 +40,20 @@ so that the app has a secure data layer with pre-existing test accounts ready fo
 
 ## Tasks / Subtasks
 
-- [ ] Write migration SQL for `leave_requests` table (AC: 1)
-- [ ] Enable RLS and write policies (AC: 2–6)
-  - [ ] Employee SELECT own rows
-  - [ ] Employee INSERT own rows
-  - [ ] Manager SELECT all rows
-  - [ ] Manager UPDATE status fields
-- [ ] Create `profiles` table (AC: 8)
-  - [ ] `id` uuid references auth.users(id)
-  - [ ] `name` text
-  - [ ] `role` text CHECK (role IN ('employee','manager'))
-- [ ] Write seed SQL for test users and profiles (AC: 7, 8)
-  - [ ] Use Supabase dashboard or `supabase/seed.sql` to insert auth users
-  - [ ] Insert corresponding profile rows
-- [ ] Document credentials in `docs/TEST_ACCOUNTS.md` (AC: 7)
+- [x] Write migration SQL for `leave_requests` table (AC: 1)
+- [x] Enable RLS and write policies (AC: 2–6)
+  - [x] Employee SELECT own rows
+  - [x] Employee INSERT own rows
+  - [x] Manager SELECT all rows
+  - [x] Manager UPDATE status fields
+- [x] Create `profiles` table (AC: 8)
+  - [x] `id` uuid references auth.users(id)
+  - [x] `name` text
+  - [x] `role` text CHECK (role IN ('employee','manager'))
+- [x] Write seed SQL for test users and profiles (AC: 7, 8)
+  - [x] Use Supabase dashboard or `supabase/seed.sql` to insert auth users
+  - [x] Insert corresponding profile rows
+- [x] Document credentials in `docs/TEST_ACCOUNTS.md` (AC: 7)
 
 ## Dev Notes
 
@@ -83,6 +87,42 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+- `npx tsc --noEmit` — clean (×2: post-implementation, post-review patches)
+- `npx eslint .` — clean
+- `npx next build` — success; `/dashboard/manager` renders as Dynamic (ƒ) due to server-side role gate
+
 ### Completion Notes List
 
+- **`CREATE POLICY IF NOT EXISTS` not valid Postgres syntax** — used `DROP POLICY IF EXISTS` + `CREATE POLICY` pattern for idempotency instead.
+- **`get_my_role()` function order** — must be created after `profiles` table; used `SET check_function_bodies = OFF` to defer body validation during migration.
+- **Auth user seeding** — Supabase hosted projects do not support setting passwords via `auth.users` SQL insert in the standard way. Used `crypt()` + `gen_salt('bf')` via MCP `execute_sql` (runs as postgres superuser), which works for development. For hosted re-seeding, use the Dashboard or Admin API as documented in `docs/TEST_ACCOUNTS.md` and `supabase/seed.sql`.
+- **Role source moved from `user_metadata` to `app_metadata`** (HIGH deferred from Story 1.1) — `app_metadata` is not writable by end-users via `auth.updateUser`. Role is stored in `app_metadata.role` on `auth.users` and mirrored in `profiles.role` for RLS. Login action updated to read `app_metadata.role`.
+- **Per-route role gate on `/dashboard/manager`** (HIGH deferred from Story 1.1) — `requireManagerRole()` added to `lib/auth.ts`; called at the top of the manager page RSC. Reads role from `profiles` table (authoritative, RLS-guarded). Unauthenticated → `/login`; authenticated non-manager → `/dashboard/employee`.
+- **`get_my_role()` REVOKE** — Supabase security advisor flagged `anon`/`authenticated` roles could call this SECURITY DEFINER function via REST API. Revoked EXECUTE on both; added to migration file.
+- **`CREATE POLICY IF NOT EXISTS`** is not standard Postgres SQL — the Dev Notes guidance was aspirational; the actual idempotent approach is `DROP POLICY IF EXISTS` + `CREATE POLICY`.
+- **[Review patch] Employee INSERT policy** — original allowed inserting rows with `status='approved'` or review fields pre-set. Fixed: `WITH CHECK` now enforces `status='pending'`, `manager_comment IS NULL`, `reviewed_at IS NULL`, `reviewed_by IS NULL`.
+- **[Review patch] Manager UPDATE policy** — original allowed changing any column. Fixed: `WITH CHECK` locks `employee_id`, `employee_name`, `type`, `start_date`, `end_date`, `reason`, `created_at` to their stored values via correlated subqueries; only review fields (`status`, `manager_comment`, `reviewed_at`, `reviewed_by`) can change.
+- **[Review patch] seed.sql metadata dependency** — original read `raw_app_meta_data->>'role'` which is NULL for Dashboard-created users. Fixed: seed now uses explicit `(email, name, role)` VALUES joined on `auth.users.email` — no metadata dependency.
+- **[Review patch] `/dashboard` page** — still read `user_metadata.role` after the 1.1 fix. Fixed: now calls `getSessionRole()` which reads from `profiles` table.
+- **[Review patch] REVOKE scope** — `REVOKE ... FROM anon, authenticated` left the default PUBLIC grant in place. Fixed: `REVOKE EXECUTE ON FUNCTION get_my_role() FROM PUBLIC` covers all roles including future ones.
+- **[Review patch] REVOKE broke policy evaluation** — revoking EXECUTE from PUBLIC (which includes `authenticated`) meant RLS policies invoking `get_my_role()` would fail for signed-in users. Fixed: moved helper to `internal` schema (not exposed by PostgREST) and granted `EXECUTE` + `USAGE` only to `authenticated`. All policies updated to `internal.get_my_role()`. Security advisor no longer flags the function.
+- **[Review patch] Login routes from `app_metadata.role`** — unreliable for Dashboard-created users where `app_metadata` is not set. Fixed: login action now queries `profiles.role` directly after sign-in — same source as `getSessionRole()` and `requireManagerRole()`. Role routing is now consistent across all entry points.
+- **[Review patch] Policies missing `TO authenticated`** — policies without a `TO` clause apply to PUBLIC; manager policies calling `internal.get_my_role()` would fail for `anon` requests with a permission error (no USAGE on `internal` schema) instead of silently returning no rows. Fixed: all policies now specify `TO authenticated`.
+- **Stray zero-byte file `'role'\`` in repo root** — artefact from shell history; deleted before commit.
+
 ### File List
+
+- `supabase/migrations/001_schema.sql` (new)
+- `supabase/seed.sql` (new)
+- `docs/TEST_ACCOUNTS.md` (new)
+- `lib/auth.ts` (modified — added `getSessionRole`, `requireManagerRole`; role source → `app_metadata`)
+- `app/(auth)/login/actions.ts` (modified — role read from `app_metadata.role`)
+- `app/dashboard/manager/page.tsx` (modified — added `requireManagerRole()` gate)
+
+## Change Log
+
+| Date       | Change                                                                                   |
+|------------|------------------------------------------------------------------------------------------|
+| 2026-06-24 | Implemented Story 1.2: schema + RLS + seed + deferred HIGH items from 1.1. Status → review. |
+| 2026-06-24 | Review patches: tightened INSERT/UPDATE policies, fixed seed metadata dependency, `/dashboard` role source, REVOKE scope. |
+| 2026-06-24 | P1 fixes: moved get_my_role to internal schema (restores policy eval, removes REST exposure); login now routes from profiles.role. |
