@@ -42,6 +42,9 @@ yarn-error.log*
 /_bmad-output
 /.claude
 
+# Claude session artifacts
+*.html
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
