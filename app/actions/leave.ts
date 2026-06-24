@@ -46,6 +46,20 @@ export async function submitLeaveRequest(
     return { error: "Only employees may submit leave requests." };
   }
 
+  // Check for overlapping approved leave
+  const { data: overlapping } = await supabase
+    .from("leave_requests")
+    .select("id")
+    .eq("employee_id", user.id)
+    .eq("status", "approved")
+    .lte("start_date", endDate)
+    .gte("end_date", startDate)
+    .limit(1);
+
+  if (overlapping?.length) {
+    return { error: "You already have approved leave overlapping these dates." };
+  }
+
   const { error } = await supabase.from("leave_requests").insert({
     employee_id: user.id,
     employee_name: profile.name,
