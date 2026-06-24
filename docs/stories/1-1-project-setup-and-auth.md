@@ -4,7 +4,7 @@ baseline_commit: baccb3f530d41fb9bad23d4a9436509172b1fb8c
 
 # Story 1.1: Project Setup & Authentication
 
-Status: review
+Status: in-progress
 
 ## Story
 
@@ -42,6 +42,21 @@ so that employees and managers can securely log in and be directed to the correc
   - [x] Protect all `/dashboard/*` routes
   - [x] Redirect unauthenticated users to `/login`
 - [x] Add sign-out button to shared layout (AC: 7)
+
+### Review Findings
+
+_Adversarial code review (2026-06-24): Blind Hunter + Edge Case Hunter + Acceptance Auditor. Resolved: 0 decision-needed open, 4 patch, 6 deferred, 4 dismissed._
+
+- [x] [Review][Defer→HIGH] Authorization derived from user-writable `user_metadata.role` — Supabase `user_metadata` is editable by the end user via `auth.updateUser`, so an employee can self-promote to `manager`. Authz should come from a server-controlled source (`app_metadata` / JWT claim / RLS-guarded row). Raised by all 3 layers. [`app/(auth)/login/actions.ts:31`, `lib/auth.ts`] — deferred to story 1-2: role storage/seeding is decided there, so the trusted-source move + role gate belong with it. Tracked as HIGH.
+- [x] [Review][Defer→HIGH] No per-route role gate — the proxy only checks authenticated-vs-not; neither the dashboard layout nor `/dashboard/manager` checks role. Any authenticated employee can directly open `/dashboard/manager`. Login-time redirect is cosmetic, not access control. Matters before Epic 3. [`lib/supabase/proxy.ts:36`, `app/dashboard/layout.tsx`] — deferred to story 1-2: depends on where role lives (above). Tracked as HIGH; must land before Epic 3 manager features.
+- [x] [Review][Patch] Redirect response drops refreshed Set-Cookie headers — FIXED: the `!user` redirect now copies cookies from `response` onto the redirect response. [`lib/supabase/proxy.ts`]
+- [x] [Review][Patch] No runtime env-var validation — FIXED: added shared `lib/supabase/env.ts` (`supabaseEnv()`) that throws a clear error when either var is missing; server/client/proxy all route through it. [`lib/supabase/env.ts`]
+- [x] [Review][Patch] Bare `/dashboard` is auth-gated but 404s — FIXED: added `app/dashboard/page.tsx` that redirects by role. [`app/dashboard/page.tsx`]
+- [x] [Review][Patch] Story record inaccurate — FIXED: corrected the `.env.local` note in Completion Notes. [story Dev Agent Record]
+- [x] [Review][Defer] Authenticated user can still load `/login` (no signed-in guard) [`app/(auth)/login`] — deferred, low priority
+- [x] [Review][Defer] `signOut`/`getUser` discard their `error` — stale session if signOut fails; auth-server blip indistinguishable from logout [`app/dashboard/actions.ts`, `lib/supabase/proxy.ts:32`] — deferred, low priority
+- [x] [Review][Defer] Proxy matcher over-broad on assets — `getUser()` round-trip on non-listed public files (only `.svg` + 3 named files skipped) [`proxy.ts:12`] — deferred, perf-only, pre-existing pattern
+- [x] [Review][Defer] No automated test for the role-map / auth guard — deliberate (no test framework; adding one is a new-dependency HALT). Add a check before Epic 2/3. [`lib/auth.ts`, `lib/supabase/proxy.ts`] — deferred, accepted in original story
 
 ## Dev Notes
 
@@ -96,7 +111,7 @@ claude-opus-4-8
 - **Async cookies:** `cookies()` is async in Next 16 — `lib/supabase/server.ts` awaits it.
 - **`@supabase/ssr` 0.12** uses the `getAll`/`setAll` cookie interface (verified against installed package), not the deprecated `get`/`set`/`remove`.
 - **Root `/`:** replaced the create-next-app template page with a `redirect("/login")` since this is a sign-in-only app with no public landing page.
-- **`.env.local`:** created with placeholder values (gitignored). Real Supabase URL/anon key are wired at seed/deploy time (stories 1-2 / 4-1).
+- **`.env.local`:** created and now holds the real Supabase project URL + anon key (gitignored, so not committed; the anon key is public-by-design). `.env.example` keeps placeholders.
 - **Tests:** no test framework is installed in this project (no jest/vitest/playwright, no `test` script). Adding one is a new dependency (a HALT condition under this workflow), so it was not introduced unprompted. Validation was done via the project's actual gates: `tsc`, `eslint`, `next build`. Recommend deciding on a test stack (e.g. Playwright for the auth E2E flow) in a follow-up.
 
 ### File List
